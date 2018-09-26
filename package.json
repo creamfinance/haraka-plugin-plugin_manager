@@ -1,0 +1,22 @@
+{
+    "engines": {
+        "node": ">= 9"
+    },
+    "author": {
+        "name": "Thomas Rosenstein",
+        "email": "thomas.rosenstein@creamfinance.com"
+    },
+    "description": "A more versatile plugin manager for haraka, so that inbound, outbound and relay plugin can be easily separated.",
+    "version": "1.0.0",
+    "license": "MIT",
+    "main": "index.js",
+    "name": "haraka-plugin-plugin_manager",
+    "bundleDependencies": false,
+    "dependencies": {
+        "haraka-constants": ">=1.0.5"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+ssh://git@github.com:creamfinance/haraka-plugin-plugin_manager.git"
+    }
+}
