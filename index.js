@@ -4,7 +4,7 @@ var manager;
 exports.register = function register () {
     const plugin = this;
     manager = new PluginManager(this);
-    manager.register(plugin);
+    manager.register();
 }
 
 exports.hook = function (next, connection, params) {

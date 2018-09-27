@@ -10,12 +10,28 @@ class PluginManager {
         this.all_plugins = {};
     }
 
-    register (plugin) {
+    register () {
         for (var i = 0; i < hooks.length; i++) {
-            plugin.register_hook(hooks[i], 'hook', 0);
+            this.plugin.register_hook(hooks[i], 'hook', 0);
         }
 
-        var cfg = plugin.config.get('plugin_manager.yaml');
+        this.plugin.config.get('plugin_manager.yaml', 'yaml', () => {
+            this.plugin.loginfo('Reloading Config');
+            this.load_config();
+        });
+
+        this.load_config();
+    }
+
+    load_config () {
+        var cfg = this.plugin.config.get('plugin_manager.yaml')
+
+        if (!('plugins' in cfg)) {
+            return this.plugin.logerror('No config found!');
+        }
+
+        // reset plugins before repopulating config
+        this.plugins = [];
 
         for (var name in cfg.plugins) {
             var code = '"use strict"; exports.check = ' + cfg.plugins[name].check;
@@ -24,7 +40,7 @@ class PluginManager {
             try {
                 vm.runInNewContext(code, context);
             } catch (err) {
-                this.plugin.logerror('Unable to load queue ' + name, err);
+                this.plugin.logerror('Unable to load queue ' + name + ': ' + err);
                 continue;
             }
 

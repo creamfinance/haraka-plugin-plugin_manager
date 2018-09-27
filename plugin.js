@@ -13,6 +13,10 @@ class CommandBag {
     inspect () {
         return '[' + this.plugin.name + '] ';
     }
+
+    get name () {
+        return this.plugin.name;
+    }
 }
 
 class Plugin {
@@ -203,7 +207,8 @@ class Plugin {
         Forwards logs to the real plugin
     */
     forward_log (func, text) {
-        this.plugin[func]('[' + this.name + '] ' + text);
+        // ('[' + this.name + '] ' + text);
+        this.plugin[func].apply(this.plugin, Array.prototype.slice.call(arguments, 1));
     }
 
     /*
