@@ -19,8 +19,14 @@ class PluginManager {
 
         for (var name in cfg.plugins) {
             var code = '"use strict"; exports.check = ' + cfg.plugins[name].check;
-            var context = { exports: { } };
-            vm.runInNewContext(code, context);
+            var context = { console: { log: this.plugin.loginfo.bind(this.plugin) }, exports: { } };
+
+            try {
+                vm.runInNewContext(code, context);
+            } catch (err) {
+                this.plugin.logerror('Unable to load queue ' + name, err);
+                continue;
+            }
 
             this.plugins.push({
                 name: name,

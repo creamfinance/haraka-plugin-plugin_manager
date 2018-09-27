@@ -134,7 +134,7 @@ class Plugin {
         this.plugin_path = this.find_plugin_path();
 
         if (!this.plugin_path) {
-            this.plugin.logerror('[' + this.name + '] Unable to load plugin code');
+            this.plugin.logerror('[' + this.name + '] Unable to find plugin code - is the plugin installed?');
             return;
         }
 
