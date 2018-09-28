@@ -7,7 +7,7 @@
         "email": "thomas.rosenstein@creamfinance.com"
     },
     "description": "A more versatile plugin manager for haraka, so that inbound, outbound and relay plugin can be easily separated.",
-    "version": "1.1.0",
+    "version": "1.1.1",
     "license": "MIT",
     "main": "index.js",
     "name": "haraka-plugin-plugin_manager",

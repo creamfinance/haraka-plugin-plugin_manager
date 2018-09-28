@@ -35,18 +35,36 @@ class Plugin {
     _make_custom_require () {
         const plugin = this;
 
-        var require_paths = [
-            path.resolve(path.dirname(this.plugin_path), 'node_modules'),
-            path.resolve('node_modules'),
-            path.resolve('.'),
-            path.resolve('..'),
-        ];
+        let require_paths;
+
+        if (plugin.hasPackageJson) {
+            // external plugin, ./ references to local plugin dir
+            require_paths = [
+                path.resolve(path.dirname(this.plugin_path), 'node_modules'),
+                path.resolve(path.dirname(this.plugin_path)),
+                path.resolve('node_modules'),
+                path.resolve('.'),
+                path.resolve('..'),
+            ];
+        } else {
+            // internal plugin, means that ./ references to HARAKA_ENV,
+            require_paths = [
+                path.resolve(path.dirname(this.plugin_path), 'node_modules'),
+                path.resolve('node_modules'),
+                path.resolve('.'),
+                path.resolve('..'),
+            ];
+        }
 
         return function (module) {
             for (var i = 0; i < require_paths.length; i++) {
                 var test_path = path.resolve(require_paths[i], module);
 
                 if (fs.existsSync(test_path + '.js')) {
+                    return require(test_path + '.js');
+                }
+
+                if (fs.existsSync(test_path)) {
                     return require(test_path);
                 }
 
@@ -62,7 +80,7 @@ class Plugin {
                     global.server = plugin.plugin.server;
                     return mod;
                 } catch (err) {
-                    plugin.logerror(err);
+                    plugin.plugin.logerror(err);
                     throw err;
                 }
             }
@@ -171,6 +189,7 @@ class Plugin {
         try {
             vm.runInNewContext(code, sandbox, this.plugin_path);
         } catch (err) {
+            console.log(err);
             this.plugin.logerror('[' + this.name + '] Unable to execute plugin code: ' + err);
         }
 
@@ -207,8 +226,14 @@ class Plugin {
         Forwards logs to the real plugin
     */
     forward_log (func, text) {
-        // ('[' + this.name + '] ' + text);
-        this.plugin[func].apply(this.plugin, Array.prototype.slice.call(arguments, 1));
+        var prepend = [];
+        var args = Array.prototype.slice.call(arguments, 1)
+
+        if (!(arguments[1] instanceof CommandBag)) {
+            prepend.push(this.commands);
+        }
+
+        this.plugin[func].apply(this.plugin, prepend.concat(args));
     }
 
     /*
@@ -218,7 +243,7 @@ class Plugin {
         if ('register' in this.commands) {
             this.commands.register.call(this.commands);
         } else {
-            this.forward_log('logerror', 'Unable to find register function - fine if you don\'t need one!');
+            this.forward_log('logerror', this.commands, 'Unable to find register function - fine if you don\'t need one!');
         }
 
         // register any hook_blah methods.
@@ -236,7 +261,7 @@ class Plugin {
     */
     register_hook (hook, callback, priority) {
         if (hooks.indexOf(hook) === -1) {
-            this.plugin.logerror('Unable to register hook ' + hook + ' - not available');
+            this.plugin.logerror(this.commands, 'Unable to register hook ' + hook + ' - not available');
             return;
         }
 
@@ -254,7 +279,7 @@ class Plugin {
         }
 
         this.hooks[hook].push(callback);
-        this.commands.loginfo('Hook ' + hook + ' registered');
+        this.commands.loginfo(this.commands, 'Hook ' + hook + ' registered');
 
         // this.manager.register_plugin_hook(this, hook, callback, priority);
     }
